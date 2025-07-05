@@ -1,0 +1,2 @@
+# Sistema Monitoreo con LoRa
+Este sistema de monitoreo está diseñado para medir temperatura, humedad, presión atmosférica y concentración de gases (alcohol) en tiempo real, con transmisión de datos mediante LoRa en áreas con señal de telefonía débil o inexistente. El PCB integra sensores, un microcontrolador y un módulo de comunicación LoRa para enviar datos desde un nodo a un Gateway, que los sube a Firebase y los muestra en una plataforma web desarrollada con Next.js y Firebase.
