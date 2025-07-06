@@ -1,6 +1,6 @@
 # Sistema de Monitoreo LoRa
 
-![Diagrama de Bloques](doc/schematic.png)
+![Diagrama de Bloques](img/3D-View.png)
 
 Este proyecto es un **sistema de monitoreo** basado en un PCB que mide temperatura, humedad, presión atmosférica y concentración de alcohol en tiempo real. Utiliza comunicación LoRa (915 MHz) para transmitir datos desde un nodo a un Gateway, que los sube a Firebase para visualización en una plataforma web desarrollada con Next.js: [Sistema de Monitoreo](https://sistema-monitoreo-lora-alexander-sactics-projects.vercel.app/).
 
