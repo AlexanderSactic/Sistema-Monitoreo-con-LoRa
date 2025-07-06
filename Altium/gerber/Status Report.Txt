@@ -1,0 +1,14 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : Project [SistemaMonitoreo.PrjPcb]
+   Generated File[SistemaMonitoreo-RoundHoles-Plated.TXT]
+   Generated File[SistemaMonitoreo-RoundHoles-NonPlated.TXT]
+   Generated File[SistemaMonitoreo-SlotHoles-Plated.TXT]
+   Generated File[SistemaMonitoreo.LDP]
+   Generated File[SistemaMonitoreo.DRR]
+
+
+Files Generated   : 5
+Documents Printed : 0
+
+Finished Output Generation At 06:16:15 On 11/06/2025

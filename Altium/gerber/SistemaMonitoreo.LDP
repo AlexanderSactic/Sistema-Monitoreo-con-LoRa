@@ -1,0 +1,4 @@
+Layer Pairs Export File for PCB: C:\Users\alexa\OneDrive\Documentos\UGAL\DYCDE\Proyecto 2\SistemaMonitoreo\SistemaMonitoreo\SistemaMonitoreo.PcbDoc
+LayersSetName=Top_Bot_Plated_Thru_Holes|DrillFile=sistemamonitoreo-roundholes-plated.txt|DrillLayers=gtl,gbl
+LayersSetName=Top_Bot_Plated_Slot_Holes|DrillFile=sistemamonitoreo-slotholes-plated.txt|DrillLayers=gtl,gbl
+LayersSetName=Top_Bot_NonPlated_Thru_Holes|DrillFile=sistemamonitoreo-roundholes-nonplated.txt|DrillLayers=gtl,gbl
