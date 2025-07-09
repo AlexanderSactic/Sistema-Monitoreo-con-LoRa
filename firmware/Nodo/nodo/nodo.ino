@@ -6,7 +6,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <TinyGPSPlus.h>
 #include <HardwareSerial.h>
-#include <vector> // Para usar std::vector
+#include <vector>
 
 #define SDA_PIN 21
 #define SCL_PIN 22
@@ -48,8 +48,6 @@ const unsigned long gpsTimeout = 10000;
 // Vector para almacenar datos
 std::vector<String> dataBuffer;
 const unsigned long transmissionInterval = 2000; // Intervalo de 2 segundos
-const unsigned long ackTimeout = 2000; // Aumentado a 2 segundos
-const int maxRetries = 3;
 
 void calibrarR0() {
   Serial.println("🕐 Calibrando R0... Por favor, no soples alcohol cerca");
@@ -113,17 +111,28 @@ String getSensorData() {
   while (gpsSerial.available()) {
     gps.encode(gpsSerial.read());
     if (gps.location.isUpdated()) {
-      lastGpsFix = millis(); // Registrar el último fix válido
+      lastGpsFix = millis();
     }
   }
 
   bool gpsActivo = (millis() - lastGpsFix) < gpsTimeout;
-  if (!gpsActivo) return "";
+  if (!gpsActivo) {
+    Serial.println("❌ GPS no activo");
+    return "";
+  }
 
-  if (!bme.performReading()) return "";
+  if (!bme.performReading()) {
+    Serial.println("❌ Fallo en lectura del BME680");
+    return "";
+  }
 
   int mq3_raw = analogRead(MQ3_PIN);
-  if (mq3_raw <= 100 || mq3_raw >= 4000) return "";
+  Serial.print("MQ3 raw: ");
+  Serial.println(mq3_raw);
+  if (mq3_raw <= 100 || mq3_raw >= 4000) {
+    Serial.println("❌ Lectura MQ3 inválida");
+    return "";
+  }
 
   float Vout = mq3_raw * (VCC / 4095.0);
   float Rs = (VCC - Vout) * RL / Vout;
@@ -152,45 +161,6 @@ String getSensorData() {
   return mensaje;
 }
 
-void sendBufferedData() {
-  if (dataBuffer.empty()) {
-    Serial.println("🗑 Buffer de datos vacío");
-    return;
-  }
-
-  for (size_t i = 0; i < dataBuffer.size(); i++) {
-    bool success = false;
-    String msgId = dataBuffer[i].substring(4, 19); // Extraer ID (millis)
-    for (int j = 0; j < maxRetries; j++) {
-      pixels.setPixelColor(0, YELLOW);
-      pixels.show();
-      LoRa.beginPacket();
-      LoRa.print(dataBuffer[i]);
-      LoRa.endPacket();
-      unsigned long startTime = millis();
-      while (millis() - startTime < ackTimeout) {
-        if (LoRa.parsePacket() > 0) {
-          String ack = LoRa.readString();
-          if (ack.indexOf("ACK: " + msgId) >= 0) {
-            success = true;
-            Serial.println("📡 Datos enviados con éxito - ID: " + msgId);
-            break;
-          }
-        }
-      }
-      if (success) break;
-      Serial.println("❌ Intento " + String(j + 1) + " fallido para ID: " + msgId);
-      delay(500);
-    }
-    if (success) {
-      dataBuffer.erase(dataBuffer.begin() + i);
-      i--; // Ajustar índice después de borrar
-    } else {
-      Serial.println("❌ Fallo al enviar datos buffered: ID: " + msgId);
-    }
-  }
-}
-
 void loop() {
   String sensorData = getSensorData();
   if (sensorData == "") {
@@ -200,29 +170,18 @@ void loop() {
     return;
   }
 
-  bool success = false;
-  for (int i = 0; i < maxRetries; i++) {
-    pixels.setPixelColor(0, YELLOW);
-    pixels.show();
-    LoRa.beginPacket();
-    LoRa.print(sensorData);
-    LoRa.endPacket();
-    unsigned long startTime = millis();
-    while (millis() - startTime < ackTimeout) {
-      if (LoRa.parsePacket() > 0) {
-        String ack = LoRa.readString();
-        if (ack.indexOf("ACK: " + sensorData.substring(4, 19)) >= 0) {
-          success = true;
-          break;
-        }
-      }
-    }
-    if (success) break;
-    pixels.setPixelColor(0, ORANGE);
-    pixels.show();
-    delay(500);
-  }
+  // Enviar datos
+  pixels.setPixelColor(0, YELLOW);
+  pixels.show();
+  LoRa.beginPacket();
+  LoRa.print(sensorData);
+  LoRa.endPacket();
 
+  // Almacenar datos en el buffer
+  dataBuffer.push_back(sensorData);
+  Serial.println("📡 Datos enviados y almacenados: " + sensorData);
+
+  // Actualizar LEDs según valores
   float ppm = sensorData.substring(sensorData.indexOf("MQ3: ") + 5, sensorData.indexOf(" ppm")).toFloat();
   if (ppm > 100) pixels.setPixelColor(1, RED);
   else if (ppm > 35) pixels.setPixelColor(1, ORANGE);
@@ -233,18 +192,8 @@ void loop() {
   else if (temp >= 28.0) pixels.setPixelColor(2, YELLOW);
   else pixels.setPixelColor(2, GREEN);
 
+  pixels.setPixelColor(0, GREEN);
   pixels.show();
-
-  if (success) {
-    pixels.setPixelColor(0, GREEN);
-    Serial.println("📡 Enviado por LoRa con éxito: " + sensorData);
-    sendBufferedData(); // Intentar enviar todos los datos buffered
-  } else {
-    dataBuffer.push_back(sensorData); // Almacenar en el buffer
-    pixels.setPixelColor(0, RED);
-    Serial.println("❌ Fallo al enviar, datos almacenados en buffer: " + sensorData);
-    sendBufferedData(); // Intentar enviar datos buffered incluso tras fallo
-  }
 
   delay(transmissionInterval);
 }
