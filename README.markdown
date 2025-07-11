@@ -67,7 +67,7 @@ El proyecto está diseñado para operar en áreas con señal de telefonía débi
 
 ## Certificación OSHWA
 
-Este proyecto está en proceso de certificación con OSHWA como hardware de código abierto. [ID de certificación pendiente]. Todos los diseños, firmware y documentación son accesibles en este repositorio para cumplir con la definición de hardware abierto.
+Este proyecto está en proceso de certificación con OSHWA como hardware de código abierto. GT000024. Todos los diseños, firmware y documentación son accesibles en este repositorio para cumplir con la definición de hardware abierto.
 
 ## Contribuir
 
